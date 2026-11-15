@@ -4,9 +4,15 @@
 
 <p align="center">在 MacBook 刘海上看 Codex、Claude Code 和 Pi 哪条会话在跑、哪条已完成。</p>
 
+<p align="center">
+  <a href="#安装"><img alt="需要 macOS 15 或更新版本" src="https://img.shields.io/badge/macOS-15%2B-343130?style=flat-square"></a>
+  <a href="https://github.com/EuanTop/ZooCove/releases"><img alt="GitHub 公开预览版" src="https://img.shields.io/github/v/release/EuanTop/ZooCove?include_prereleases&amp;label=Preview&amp;color=90694f&amp;style=flat-square"></a>
+  <a href="LICENSE"><img alt="MIT 许可证" src="https://img.shields.io/badge/license-MIT-495b4f?style=flat-square"></a>
+</p>
+
 <p align="center"><a href="https://euantop.github.io/ZooCove/?lang=zh">产品首页</a> · <a href="#安装">下载与安装</a> · <a href="README.md">English</a> · <a href="CHANGELOG.md">更新记录</a></p>
 
-![ZooCove 刘海演示，两个示例会话分别处于运行中和待查看状态](docs/assets/notch-preview.jpg)
+![ZooCove 刘海动图，展示 Codex、Claude Code 和 Pi 的八条会话](docs/assets/notch-preview.gif)
 
 ## 能做什么
 
@@ -24,7 +30,7 @@ ZooCove 使用 AppKit 和 SwiftUI 原生实现，读取本机会话文件并监�
 | Claude Code | 默认和 Cockpit 实例 | `CLAUDE_CONFIG_DIR` |
 | Pi Agent | 默认实例 | `PI_CODING_AGENT_DIR` |
 
-ZooCove 分别记录 Agent 类型和实例来源。Cockpit 提供 Codex、Claude Code 的实例位置，ZooCove 按对应 Agent 的格式读取会话，用原目录生成恢复命令。
+[Cockpit Tools](https://github.com/jlcodes99/cockpit-tools) 提供 Codex、Claude Code 的实例位置，ZooCove 按对应 Agent 的格式读取会话，用原目录生成恢复命令。
 
 **v1.7.1 公开下载版支持 Codex。** Claude Code、Pi 和 Cockpit Claude 可在 **[从源码构建的 1.8 系列](#从源码构建)** 中体验。
 
@@ -47,7 +53,11 @@ ZooCove 分别记录 Agent 类型和实例来源。Cockpit 提供 Codex、Claude
 | 按位置循环跳转 | **⌃⌘Tab** |
 | 在面板选中并预览会话 | **↑ / ↓**，然后按 **Return** |
 
-如果无法确认跳转目标，ZooCove 会提供对应实例的终端恢复命令。想让 Codex 帮你换头像，在设置里点「安装 Codex 头像技能」，再在目标会话说「用这个项目的图标作为我的 ZooCove 头像」。
+如果无法确认跳转目标，ZooCove 会提供对应实例的终端恢复命令。
+
+## Codex 头像技能
+
+在 ZooCove 设置里点「安装 Codex 头像技能」，然后新开一条 Codex 会话，或重新打开要换头像的会话。在会话里输入「`$notchzoo-avatar` 用 `assets/icon.png` 作为我的 ZooCove 头像」，把示例路径换成你本机的图片路径。技能会把图片绑到这条会话及其所属实例。想撤销时，输入「`$notchzoo-avatar` 恢复我的自动头像」。
 
 ## 从源码构建
 
@@ -76,7 +86,3 @@ dist/ZooCove.app/Contents/MacOS/ZooCove --diagnose <会话 ID>
 欢迎在 [GitHub Issues](https://github.com/EuanTop/ZooCove/issues) 报告问题或提建议。报告问题时，请附上 macOS 版本和复现步骤。提交代码前可以先运行 `swift test`。
 
 ZooCove 使用 [MIT 许可证](LICENSE)。首页使用的 Instrument Serif 字体沿用 [SIL Open Font License](docs/assets/OFL-InstrumentSerif.txt)。
-
-### 设计参考
-
-[Peeko](https://usepeeko.app) · [Boring Notch](https://github.com/TheBoredTeam/boring.notch) · [Perch](https://github.com/asafofer/perch) · [Cockpit Tools](https://github.com/jlcodes99/cockpit-tools)

@@ -4,9 +4,15 @@
 
 <p align="center">See which Codex, Claude Code, and Pi chats are working or ready from your MacBook notch.</p>
 
+<p align="center">
+  <a href="#install"><img alt="macOS 15+" src="https://img.shields.io/badge/macOS-15%2B-343130?style=flat-square"></a>
+  <a href="https://github.com/EuanTop/ZooCove/releases"><img alt="Public preview on GitHub Releases" src="https://img.shields.io/github/v/release/EuanTop/ZooCove?include_prereleases&amp;label=Preview&amp;color=90694f&amp;style=flat-square"></a>
+  <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-495b4f?style=flat-square"></a>
+</p>
+
 <p align="center"><a href="https://euantop.github.io/ZooCove/">Website</a> · <a href="#install">Download &amp; install</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="CHANGELOG.md">Changelog</a></p>
 
-![ZooCove notch demo with one chat working and one ready](docs/assets/notch-preview.jpg)
+![Animated demo of eight Codex, Claude Code, and Pi chats in the ZooCove notch](docs/assets/notch-preview.gif)
 
 ## What it does
 
@@ -24,7 +30,7 @@ ZooCove is a native macOS app built with AppKit and SwiftUI. It watches local se
 | Claude Code | Default and Cockpit | `CLAUDE_CONFIG_DIR` |
 | Pi Agent | Default | `PI_CODING_AGENT_DIR` |
 
-ZooCove keeps the Agent and the profile's source separate. Cockpit provides Codex and Claude Code profile locations. ZooCove reads each profile using that Agent’s own session format and generates a resume command for its directory.
+[Cockpit Tools](https://github.com/jlcodes99/cockpit-tools) provides Codex and Claude Code profile locations. ZooCove reads each profile using that Agent’s own session format and generates a resume command for its directory.
 
 The **v1.7.1 public download supports Codex**. Claude Code, Pi, and Cockpit Claude are available in the **1.8 series [from source](#build-from-source)**.
 
@@ -47,7 +53,11 @@ The first public preview uses ad hoc signing. macOS may block it on first launch
 | Cycle through visible animals | **⌃⌘Tab** |
 | Select and preview a chat in the switcher | **↑ / ↓**, then **Return** |
 
-When a destination can’t be identified reliably, ZooCove offers a resume command for that chat’s profile. To let Codex set an avatar, click **安装 Codex 头像技能** (Install Codex avatar skill) in Settings. Then ask in the target chat, “Use this project’s icon as my ZooCove avatar.”
+When a destination can’t be identified reliably, ZooCove offers a resume command for that chat’s profile.
+
+## Codex avatar skill
+
+In ZooCove Settings, click **安装 Codex 头像技能** (Install Codex avatar skill), then start a new Codex chat or reopen the chat you want to customize. In that chat, enter “`$notchzoo-avatar` Use `assets/icon.png` as my ZooCove avatar,” using the path to your local image. The skill binds the image to that chat in its Codex profile. Enter “`$notchzoo-avatar` Restore my automatic avatar” to undo it.
 
 ## Build from source
 
@@ -76,7 +86,3 @@ The diagnostic command lists profile types, folder names, and whether it finds a
 Use [GitHub Issues](https://github.com/EuanTop/ZooCove/issues) for bugs and feature requests. Include your macOS version and steps to reproduce. Before submitting a code change, run `swift test`.
 
 ZooCove uses the [MIT License](LICENSE). The website's Instrument Serif font is distributed under the [SIL Open Font License](docs/assets/OFL-InstrumentSerif.txt).
-
-### Design references
-
-[Peeko](https://usepeeko.app) · [Boring Notch](https://github.com/TheBoredTeam/boring.notch) · [Perch](https://github.com/asafofer/perch) · [Cockpit Tools](https://github.com/jlcodes99/cockpit-tools)
