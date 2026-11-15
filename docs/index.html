@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="See which Codex chats are working, which are ready, and jump back from your MacBook notch.">
+  <meta name="zoocove-repository" content="">
+  <meta name="zoocove-preview-tag" content="v1.7.1">
+  <title>ZooCove</title>
+  <link rel="icon" href="assets/capybara.png">
+  <link rel="stylesheet" href="styles.css">
+  <script src="site.js" defer></script>
+</head>
+<body>
+  <header class="site-header wrap">
+    <a class="brand" href="./" aria-label="ZooCove"><img src="assets/capybara.png" alt="" width="36" height="36">ZooCove</a>
+    <nav>
+      <a id="source" hidden>GitHub ↗</a>
+      <a id="language" class="language" href="?lang=zh" lang="zh-CN">简体中文</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" aria-labelledby="title">
+      <h1 id="title"><span data-copy="headline">Your Codex chats,</span><em data-copy="headlineAccent">in the notch.</em></h1>
+      <p class="summary" data-copy="summary">See who’s working and who’s done. Jump to the right chat with a click.</p>
+      <div class="download">
+        <a id="download" class="primary" hidden><span aria-hidden="true">↓</span> <span data-copy="download">Download for macOS</span></a>
+        <span id="release-pending" class="primary pending" data-copy="pending">Download coming with the first release</span>
+        <small id="requirements" data-copy="requirements">macOS 15+ · Apple silicon &amp; Intel</small>
+      </div>
+    </section>
+
+    <figure class="demo" aria-labelledby="demo-caption">
+      <div class="desktop">
+        <div class="menu" aria-hidden="true"><span>Finder &nbsp;&nbsp; File &nbsp;&nbsp; Edit</span><span>9:41</span></div>
+        <div class="island" id="island" data-open>
+          <div class="strip">
+            <div class="slot">
+              <span class="pet working" data-pet>
+                <img src="assets/platypus.png" alt="" width="34" height="34">
+                <span class="wave" aria-hidden="true"></span>
+                <span class="check" aria-hidden="true">✓</span>
+              </span>
+              <span>atlas</span>
+            </div>
+            <button id="toggle-panel" class="notch" type="button" aria-expanded="true" aria-controls="demo-panel" aria-label="Collapse the preview panel"></button>
+            <div class="slot">
+              <span class="pet ready">
+                <img src="assets/mallard.png" alt="" width="34" height="34">
+                <span class="check" aria-hidden="true">✓</span>
+              </span>
+              <span>field-notes</span>
+            </div>
+          </div>
+          <div class="panel" id="demo-panel">
+            <div class="panel-inner">
+              <div class="panel-header"><strong>ZooCove</strong><span class="search" data-copy="search">Search chats</span><span class="instance" data-copy="instances">All profiles</span></div>
+              <div class="chat selected">
+                <img src="assets/platypus.png" alt="" width="38" height="38">
+                <div><strong data-copy="atlasTitle">Build the search index</strong><small>Cockpit · atlas</small></div>
+                <span id="demo-status" class="status" aria-live="polite" data-copy="working">Working</span>
+              </div>
+              <div class="chat">
+                <img src="assets/mallard.png" alt="" width="38" height="38">
+                <div><strong data-copy="fieldTitle">Polish the release notes</strong><small>Codex · field-notes</small></div>
+                <span class="status finished" data-copy="ready">✓ Ready</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <figcaption id="demo-caption">
+        <span data-copy="demoCaption">Try the notch with two example chats.</span>
+        <div class="demo-actions">
+          <button id="panel-action" type="button" aria-controls="demo-panel" aria-expanded="true" data-copy="collapse">Collapse panel</button>
+          <button id="finish-action" type="button" data-copy="finish">Finish a reply</button>
+        </div>
+      </figcaption>
+    </figure>
+
+    <section class="features" aria-label="Features">
+      <article>
+        <h2 data-copy="featureStatus">See when it’s ready.</h2>
+        <p data-copy="detailStatus">Doodles move while Codex works. A green check stays until you open that chat through ZooCove.</p>
+      </article>
+      <article>
+        <h2 data-copy="featureJump">Jump to the right chat.</h2>
+        <p data-copy="detailJump">Watch default Codex and Cockpit profiles together. Click an animal or press ⌃⌘1–9 to jump back.</p>
+      </article>
+      <article>
+        <h2 data-copy="featurePet">Give each chat a face.</h2>
+        <p data-copy="detailPet">Pick from 16 doodle animals or use a project icon of your own.</p>
+      </article>
+    </section>
+  </main>
+
+  <footer class="site-footer wrap">
+    <span data-copy="footer">Native macOS app · Reads local Codex data</span>
+    <a id="release-notes" hidden data-copy="releases">Releases ↗</a>
+  </footer>
+</body>
+</html>
