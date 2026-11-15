@@ -23,7 +23,7 @@
   <main class="wrap">
     <section class="hero" aria-labelledby="title">
       <h1 id="title"><span data-copy="headline">Your agent chats,</span><em data-copy="headlineAccent">in the notch.</em></h1>
-      <p class="summary" data-copy="summary">See which Codex, Claude Code, and Pi chats are working or ready.</p>
+      <p class="summary" data-copy="summary">See what’s running and what’s ready across Codex, Claude Code, and Pi, all in one row.</p>
       <div class="download">
         <a id="download" class="primary" hidden><span aria-hidden="true">↓</span> <span data-copy="download">Download for macOS</span></a>
         <span id="release-pending" class="primary pending" data-copy="pending">Download coming with the first release</span>
@@ -34,51 +34,45 @@
 
     <figure class="demo" aria-labelledby="demo-caption">
       <div class="desktop">
-        <div class="menu" aria-hidden="true"><span>Finder &nbsp;&nbsp; File &nbsp;&nbsp; Edit</span><span>9:41</span></div>
+        <div class="menu" aria-hidden="true"><span>Finder</span><span>9:41</span></div>
         <div class="island" id="island" data-open>
           <div class="strip">
-            <div class="slot">
-              <span class="pet working" data-pet>
-                <img src="assets/platypus.png" alt="" width="34" height="34">
-                <span class="wave" aria-hidden="true"></span>
-                <span class="check" aria-hidden="true">✓</span>
-              </span>
-              <span>atlas</span>
-            </div>
             <button id="toggle-panel" class="notch" type="button" aria-expanded="true" aria-controls="demo-panel" aria-label="Collapse the preview panel"></button>
-            <div class="slot">
-              <span class="pet ready">
-                <img src="assets/mallard.png" alt="" width="34" height="34">
-                <span class="check" aria-hidden="true">✓</span>
-              </span>
-              <span>field-notes</span>
-            </div>
           </div>
           <div class="panel" id="demo-panel">
             <div class="panel-inner">
               <div class="panel-header"><strong>ZooCove</strong><span class="search" data-copy="search">Search chats</span><span class="instance" data-copy="instances">All profiles</span></div>
-              <div class="chat selected">
-                <img src="assets/platypus.png" alt="" width="38" height="38">
-                <div><strong data-copy="atlasTitle">Build the search index</strong><small>Claude Code · Cockpit</small></div>
-                <span id="demo-status" class="status" aria-live="polite" data-copy="working">Working</span>
-              </div>
-              <div class="chat">
-                <img src="assets/mallard.png" alt="" width="38" height="38">
-                <div><strong data-copy="fieldTitle">Polish the release notes</strong><small>Pi Agent · field-notes</small></div>
-                <span class="status finished" data-copy="ready">✓ Ready</span>
-              </div>
+              <div id="demo-chats" class="chat-list"></div>
             </div>
           </div>
         </div>
       </div>
-      <figcaption id="demo-caption">
-        <span data-copy="demoCaption">Try the notch with two example chats.</span>
+      <figcaption>
+        <span id="demo-caption" aria-live="polite">8 example chats across 3 agents</span>
         <div class="demo-actions">
           <button id="panel-action" type="button" aria-controls="demo-panel" aria-expanded="true" data-copy="collapse">Collapse panel</button>
-          <button id="finish-action" type="button" data-copy="finish">Finish a reply</button>
+          <button id="finish-action" type="button" data-copy="finish">Finish selected chat</button>
         </div>
       </figcaption>
     </figure>
+
+    <template id="demo-slot">
+      <button class="slot" type="button" aria-controls="demo-panel" aria-pressed="false">
+        <span class="pet" aria-hidden="true">
+          <img alt="" width="34" height="34">
+          <span class="wave"></span>
+          <span class="check">✓</span>
+        </span>
+        <span class="project"></span>
+      </button>
+    </template>
+    <template id="demo-chat">
+      <button class="chat" type="button" aria-pressed="false">
+        <img alt="" width="38" height="38">
+        <span><strong></strong><small></small></span>
+        <span class="status"></span>
+      </button>
+    </template>
 
     <section class="features" aria-label="Features">
       <article>
