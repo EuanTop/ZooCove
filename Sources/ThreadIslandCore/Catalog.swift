@@ -47,7 +47,10 @@ public enum Catalog {
     private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
     public static func exists(for instance: Instance) -> Bool {
-        databaseURL(for: instance) != nil ||
+        if !instance.agent.isCodex {
+            return (try? instance.sessionDirectory.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true
+        }
+        return databaseURL(for: instance) != nil ||
         FileManager.default.isReadableFile(atPath: instance.root.appending(path: indexName).path)
     }
 
@@ -70,6 +73,9 @@ public enum Catalog {
                                 limit: Int = 60, offset: Int = 0) throws -> [Session] {
         let search = query.trimmingCharacters(in: .whitespacesAndNewlines)
         let window = min(max(limit, 1), 200)
+        if !instance.agent.isCodex {
+            return AgentSessions.sessions(in: instance, matching: search, limit: window, offset: max(0, offset))
+        }
         do {
             return try sqliteSessions(in: instance, query: search, limit: window, offset: max(0, offset))
         } catch CatalogError.unsupported {
@@ -81,6 +87,9 @@ public enum Catalog {
 
     public static func session(id: String, in instance: Instance) throws -> Session? {
         guard isThreadID(id) else { return nil }
+        if !instance.agent.isCodex {
+            return AgentSessions.sessions(in: instance, matching: "", limit: 1, offset: 0, exactID: id).first
+        }
         do {
             return try sqliteSessions(in: instance, query: "", limit: 1, offset: 0, exactID: id).first
         } catch CatalogError.unsupported {
@@ -92,6 +101,7 @@ public enum Catalog {
 
     public static func interactiveSession(id: String, in instance: Instance) throws -> Session? {
         guard isThreadID(id) else { return nil }
+        if !instance.agent.isCodex { return try session(id: id, in: instance) }
         return try sqliteSessions(in: instance, query: "", limit: 1, offset: 0,
                                   exactID: id, interactiveOnly: true).first
     }

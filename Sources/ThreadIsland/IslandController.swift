@@ -255,6 +255,13 @@ final class IslandController: NSObject, NSApplicationDelegate, NSWindowDelegate 
 
     private func enqueueJump(to session: Session) {
         jumpError?.close()
+        if !session.instance.agent.isCodex {
+            queuedJump = nil
+            show()
+            model.settings = false
+            model.show(session)
+            return
+        }
         queuedJump = Jump(session: session, pendingResult: model.pendingResult(for: session))
         guard jumpTask == nil else { return }
         jumpTask = Task { [weak self] in

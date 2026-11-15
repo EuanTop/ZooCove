@@ -20,7 +20,7 @@ final class LiveMonitor {
         stop()
         self.instances = instances
         self.recovering = recovering
-        let paths = instances.map { $0.root.appending(path: "sessions").path }
+        let paths = instances.map(\.sessionDirectory.path)
             .filter { FileManager.default.fileExists(atPath: $0) }
         if !paths.isEmpty { watch(paths) }
         refresh(seed: true)
@@ -58,7 +58,7 @@ final class LiveMonitor {
                 $0 & UInt32(kFSEventStreamEventFlagMustScanSubDirs | kFSEventStreamEventFlagRootChanged) != 0
             }
             MainActor.assumeIsolated {
-                owner.refresh(paths: Set(paths.filter(LiveSessions.isRollout)), seed: lostEvents)
+                owner.refresh(paths: Set(paths.filter { $0.hasSuffix(".jsonl") }), seed: lostEvents)
             }
         }
         let flags = kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents |

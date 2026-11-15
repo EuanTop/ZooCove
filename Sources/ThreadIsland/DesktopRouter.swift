@@ -23,6 +23,7 @@ enum DesktopRouter {
     }
 
     static func destination(for instance: Instance) throws -> NSRunningApplication {
+        guard instance.agent.isCodex else { throw RouteError.wrongInstance }
         let apps = NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
             .filter { !$0.isTerminated && $0.bundleURL != nil }
         guard !apps.isEmpty else { throw RouteError.notRunning }
@@ -35,7 +36,8 @@ enum DesktopRouter {
     }
 
     static func open(_ session: Session) async throws {
-        guard let url = SessionLink.desktopURL(for: session.threadID) else { throw RouteError.rejected }
+        guard session.instance.agent.isCodex,
+              let url = SessionLink.desktopURL(for: session.threadID) else { throw RouteError.rejected }
         let matched = try destination(for: session.instance)
         guard let applicationURL = matched.bundleURL else { throw RouteError.rejected }
         let configuration = NSWorkspace.OpenConfiguration()

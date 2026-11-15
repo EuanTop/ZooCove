@@ -1,14 +1,15 @@
 "use strict";
 
 const chinese = {
-  headline: "你的 Codex 会话，",
+  headline: "你的 Agent 会话，",
   headlineAccent: "就在刘海上。",
-  summary: "一眼看谁在跑、谁跑完了。点一下，就回到那条会话。",
+  summary: "一眼看清 Codex、Claude Code 和 Pi 哪条在跑、哪条已完成。",
   download: "下载 macOS 版",
   pending: "首个公开版本发布后开放下载",
   requirements: "macOS 15+ · Apple 芯片与 Intel",
   localRequirements: "本地体验版 · macOS 15+",
-  previewRequirements: "公开预览版 · macOS 15+",
+  previewRequirements: "v1.7.1 公开预览版 · Codex · macOS 15+",
+  sourceBuild: "Claude Code 和 Pi 可从源码构建 1.8 体验",
   search: "搜索会话",
   instances: "全部实例",
   atlasTitle: "构建搜索索引",
@@ -21,18 +22,18 @@ const chinese = {
   finish: "完成一条回复",
   restart: "重新运行",
   featureStatus: "一眼看到完成状态",
-  detailStatus: "Codex 运行时动物会动。回复完成后亮起绿勾，等你通过 ZooCove 打开。",
-  featureJump: "一键回到对应会话",
-  detailJump: "同时监听默认 Codex 和 Cockpit 实例。点击动物，或按 ⌃⌘1–9 直接跳转。",
+  detailStatus: "Agent 运行时动物会动。回复完成后亮起绿勾，等你通过 ZooCove 打开。",
+  featureJump: "找到对应的会话",
+  detailJump: "自动识别 Cockpit 管理的 Codex 和 Claude Code 实例，也可以手动添加本机目录。",
   featurePet: "给每条会话一张脸",
   detailPet: "从 16 只涂鸦动物里挑一个，也可以换成自己的项目图标。",
-  footer: "原生 macOS 应用 · 读取本机 Codex 数据",
+  footer: "原生 macOS 应用 · 读取本机的会话数据",
   releases: "版本发布 ↗",
 };
 
 const english = {
   localRequirements: "Local preview build · macOS 15+",
-  previewRequirements: "Public preview · macOS 15+",
+  previewRequirements: "v1.7.1 public preview · Codex · macOS 15+",
   expand: "Expand panel",
   restart: "Run again",
 };
@@ -110,7 +111,13 @@ if (repositoryPattern.test(repository)) {
   setLink("source", source);
   setLink("release-notes", `${source}/releases`);
   setLink("download", `${source}/releases/${asset}/ZooCove.dmg`);
-  if (preview) document.querySelector("#requirements").textContent = copy.previewRequirements;
+  if (previewTag === "v1.7.1") {
+    document.querySelector("#requirements").textContent = copy.previewRequirements;
+    setLink("source-build", isChinese
+      ? `${source}/blob/main/README.zh-CN.md#从源码构建`
+      : `${source}#build-from-source`);
+    document.querySelector("#source-build-note").hidden = false;
+  }
 } else if (localHost && localDMG && /^[\w.-]+\.dmg$/.test(localDMG)) {
   setLink("download", `./${localDMG}`);
   download.download = localDMG;

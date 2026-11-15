@@ -2,7 +2,7 @@
 
 <h1 align="center">ZooCove</h1>
 
-<p align="center">See which Codex chats are working, which are ready, and jump back from your MacBook notch.</p>
+<p align="center">See which Codex, Claude Code, and Pi chats are working or ready from your MacBook notch.</p>
 
 <p align="center"><a href="https://euantop.github.io/ZooCove/">Website</a> · <a href="#install">Download &amp; install</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="CHANGELOG.md">Changelog</a></p>
 
@@ -11,10 +11,22 @@
 ## What it does
 
 - **See what’s ready at a glance.** A doodle animal moves while a chat works. When the reply finishes, the animal settles and keeps a green check until you open the chat through ZooCove.
-- **Return to the right chat.** Click the animal or use a shortcut. ZooCove tracks the default Codex profile and multiple Cockpit or custom `CODEX_HOME` profiles at the same time.
+- **Find the right chat.** Click an animal or use a shortcut. Codex can jump to the matching desktop instance. Claude Code and Pi open a preview with a copyable command to resume that exact session.
 - **Find and personalize chats.** Expand the notch to search by title, project, or chat ID. Pick a doodle or use a project image as the avatar for that chat.
 
-ZooCove is a native macOS app built with AppKit and SwiftUI. It reads local Codex data, watches for changes, and uses no ZooCove account or cloud service.
+ZooCove is a native macOS app built with AppKit and SwiftUI. It watches local session files and uses no ZooCove account or cloud service.
+
+## Agent support
+
+| Agent | Auto-detected profiles | Manual profile directory |
+| --- | --- | --- |
+| Codex | Default and Cockpit | `CODEX_HOME` |
+| Claude Code | Default and Cockpit | `CLAUDE_CONFIG_DIR` |
+| Pi Agent | Default | `PI_CODING_AGENT_DIR` |
+
+ZooCove keeps the Agent and the profile's source separate. Cockpit provides Codex and Claude Code profile locations. ZooCove reads each profile using that Agent’s own session format and generates a resume command for its directory.
+
+The **v1.7.1 public download supports Codex**. Claude Code, Pi, and Cockpit Claude are available in the **1.8 series [from source](#build-from-source)**.
 
 ## Install
 
@@ -22,7 +34,7 @@ ZooCove is a native macOS app built with AppKit and SwiftUI. It reads local Code
 
 1. Download `ZooCove.dmg` from [GitHub Releases](https://github.com/EuanTop/ZooCove/releases).
 2. Open the disk image, drag **ZooCove** into **Applications**, then launch it.
-3. Open ZooCove’s settings to choose the Codex profiles you want to watch. You can also add a local profile directory.
+3. Open Settings to choose the profiles you want to watch. In 1.8, choose the Agent before selecting a custom profile directory.
 
 The first public preview uses ad hoc signing. macOS may block it on first launch because it has yet to be notarized. The release notes link to Apple's first-launch instructions. You can also [build a local copy](#build-from-source).
 

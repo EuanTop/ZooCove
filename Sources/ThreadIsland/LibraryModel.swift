@@ -160,11 +160,15 @@ final class LibraryModel {
         if let stored = defaults.data(forKey: "customInstances"),
            let list = try? JSONDecoder().decode([Instance].self, from: stored) { custom = list }
         updateInstances()
+        let cli = Set(instances.filter { !$0.agent.isCodex }.map(\.id))
+        let knownCLI = Set(defaults.stringArray(forKey: "knownCLIInstances") ?? [])
         if let stored = defaults.stringArray(forKey: "enabledInstances") {
-            enabled = Set(stored)
+            enabled = Set(stored).union(cli.subtracting(knownCLI))
+            if enabled != Set(stored) { defaults.set(Array(enabled).sorted(), forKey: "enabledInstances") }
         } else {
             enabled = Set(instances.map(\.id))
         }
+        defaults.set(Array(knownCLI.union(cli)).sorted(), forKey: "knownCLIInstances")
         updateIsland(preservingTracked: true)
     }
 
@@ -237,24 +241,36 @@ final class LibraryModel {
         let previous = Set(instances.map(\.id))
         updateInstances()
         enabled.formUnion(Set(instances.map(\.id)).subtracting(previous))
+        let knownCLI = Set(defaults.stringArray(forKey: "knownCLIInstances") ?? [])
+        defaults.set(Array(knownCLI.union(instances.filter { !$0.agent.isCodex }.map(\.id))).sorted(),
+                     forKey: "knownCLIInstances")
         persist()
         watch()
         refresh()
     }
 
-    func addInstance() {
+    func addInstance(_ agent: Instance.Agent) {
         let picker = NSOpenPanel()
         picker.canChooseFiles = false
         picker.canChooseDirectories = true
         picker.allowsMultipleSelection = false
         picker.showsHiddenFiles = true
-        picker.prompt = "添加实例"
-        picker.message = "选择包含 state_*.sqlite 或 session_index.jsonl 的 CODEX_HOME 目录。"
+        picker.prompt = "添加 \(agent.name) 实例"
+        picker.message = switch agent {
+        case .codex: "选择包含 state_*.sqlite 或 session_index.jsonl 的 CODEX_HOME。"
+        case .claudeCode: "选择包含 projects 文件夹的 CLAUDE_CONFIG_DIR。"
+        case .pi: "选择包含 sessions 文件夹的 PI_CODING_AGENT_DIR。"
+        }
         let answer = picker.runModal()
         guard answer == .OK, let root = picker.url else { return }
-        let instance = Instance(name: root.lastPathComponent, root: root, kind: .custom)
+        let instance = Instance(name: "\(agent.name) · \(root.lastPathComponent)", root: root,
+                                agent: agent, origin: .custom)
         guard Catalog.exists(for: instance) else {
-            notice = "这个文件夹里找不到 Codex 会话索引。"
+            notice = "这个目录里没有找到 \(agent.name) 会话。"
+            return
+        }
+        if let existing = instances.first(where: { $0.id == instance.id }), existing.agent != agent {
+            notice = "这个目录已作为 \(existing.agent.name) 实例添加。"
             return
         }
         if !instances.contains(where: { $0.id == instance.id }) {
@@ -266,6 +282,10 @@ final class LibraryModel {
         watch()
         refresh()
         notice = "已启用 \(instances.first(where: { $0.id == instance.id })?.name ?? instance.name)。"
+    }
+
+    func canForget(_ instance: Instance) -> Bool {
+        custom.contains { $0.id == instance.id }
     }
 
     func forget(_ instance: Instance) {
@@ -302,13 +322,16 @@ final class LibraryModel {
         loadingDetail = true
         notice = nil
         updateDesktopStatus(session)
+        let viewedResult = session.instance.agent.isCodex ? nil : pendingResult(for: session)
         detailTask?.cancel()
         detailTask = Task {
             let result = await Task.detached(priority: .userInitiated) { Result { try Transcript.read(session) } }.value
             guard !Task.isCancelled else { return }
             loadingDetail = false
             switch result {
-            case .success(let result): transcript = result
+            case .success(let result):
+                transcript = result
+                if !result.messages.isEmpty { markViewed(viewedResult) }
             case .failure: detailError = "这个会话的记录文件暂时无法读取。"
             }
         }
@@ -322,7 +345,10 @@ final class LibraryModel {
     }
 
     func copyCommand(_ session: Session) {
-        guard let command = SessionLink.terminalCommand(for: session) else { return }
+        guard let command = SessionLink.terminalCommand(for: session) else {
+            notice = "暂时无法生成这条会话的恢复命令。"
+            return
+        }
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(command, forType: .string)
         notice = "已复制适用于「\(session.instance.name)」的恢复命令。"

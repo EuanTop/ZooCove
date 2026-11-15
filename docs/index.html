@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="See which Codex chats are working, which are ready, and jump back from your MacBook notch.">
-  <meta name="zoocove-repository" content="">
+  <meta name="description" content="See which Codex, Claude Code, and Pi chats are working or ready from your MacBook notch.">
+  <meta name="zoocove-repository" content="EuanTop/ZooCove">
   <meta name="zoocove-preview-tag" content="v1.7.1">
   <title>ZooCove</title>
   <link rel="icon" href="assets/capybara.png">
@@ -22,12 +22,13 @@
 
   <main class="wrap">
     <section class="hero" aria-labelledby="title">
-      <h1 id="title"><span data-copy="headline">Your Codex chats,</span><em data-copy="headlineAccent">in the notch.</em></h1>
-      <p class="summary" data-copy="summary">See who’s working and who’s done. Jump to the right chat with a click.</p>
+      <h1 id="title"><span data-copy="headline">Your agent chats,</span><em data-copy="headlineAccent">in the notch.</em></h1>
+      <p class="summary" data-copy="summary">See which Codex, Claude Code, and Pi chats are working or ready.</p>
       <div class="download">
         <a id="download" class="primary" hidden><span aria-hidden="true">↓</span> <span data-copy="download">Download for macOS</span></a>
         <span id="release-pending" class="primary pending" data-copy="pending">Download coming with the first release</span>
         <small id="requirements" data-copy="requirements">macOS 15+ · Apple silicon &amp; Intel</small>
+        <small id="source-build-note" hidden><a id="source-build" data-copy="sourceBuild">Build 1.8 from source for Claude Code and Pi</a></small>
       </div>
     </section>
 
@@ -58,12 +59,12 @@
               <div class="panel-header"><strong>ZooCove</strong><span class="search" data-copy="search">Search chats</span><span class="instance" data-copy="instances">All profiles</span></div>
               <div class="chat selected">
                 <img src="assets/platypus.png" alt="" width="38" height="38">
-                <div><strong data-copy="atlasTitle">Build the search index</strong><small>Cockpit · atlas</small></div>
+                <div><strong data-copy="atlasTitle">Build the search index</strong><small>Claude Code · Cockpit</small></div>
                 <span id="demo-status" class="status" aria-live="polite" data-copy="working">Working</span>
               </div>
               <div class="chat">
                 <img src="assets/mallard.png" alt="" width="38" height="38">
-                <div><strong data-copy="fieldTitle">Polish the release notes</strong><small>Codex · field-notes</small></div>
+                <div><strong data-copy="fieldTitle">Polish the release notes</strong><small>Pi Agent · field-notes</small></div>
                 <span class="status finished" data-copy="ready">✓ Ready</span>
               </div>
             </div>
@@ -82,11 +83,11 @@
     <section class="features" aria-label="Features">
       <article>
         <h2 data-copy="featureStatus">See when it’s ready.</h2>
-        <p data-copy="detailStatus">Doodles move while Codex works. A green check stays until you open that chat through ZooCove.</p>
+        <p data-copy="detailStatus">Doodles move while an agent works. A green check stays until you open that chat through ZooCove.</p>
       </article>
       <article>
-        <h2 data-copy="featureJump">Jump to the right chat.</h2>
-        <p data-copy="detailJump">Watch default Codex and Cockpit profiles together. Click an animal or press ⌃⌘1–9 to jump back.</p>
+        <h2 data-copy="featureJump">Find the right session.</h2>
+        <p data-copy="detailJump">Discover Codex and Claude Code profiles managed by Cockpit, or add a local profile yourself.</p>
       </article>
       <article>
         <h2 data-copy="featurePet">Give each chat a face.</h2>
@@ -96,7 +97,7 @@
   </main>
 
   <footer class="site-footer wrap">
-    <span data-copy="footer">Native macOS app · Reads local Codex data</span>
+    <span data-copy="footer">Native macOS app · Reads local session data</span>
     <a id="release-notes" hidden data-copy="releases">Releases ↗</a>
   </footer>
 </body>

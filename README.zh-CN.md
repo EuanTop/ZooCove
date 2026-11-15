@@ -2,7 +2,7 @@
 
 <h1 align="center">ZooCove</h1>
 
-<p align="center">在 MacBook 刘海上看 Codex 哪条会话在跑、哪条已完成，点一下就回去。</p>
+<p align="center">在 MacBook 刘海上看 Codex、Claude Code 和 Pi 哪条会话在跑、哪条已完成。</p>
 
 <p align="center"><a href="https://euantop.github.io/ZooCove/?lang=zh">产品首页</a> · <a href="#安装">下载与安装</a> · <a href="README.md">English</a> · <a href="CHANGELOG.md">更新记录</a></p>
 
@@ -11,10 +11,22 @@
 ## 能做什么
 
 - **一眼看到会话状态。** 会话运行时，小动物会游动或振翅。回复完成后，动物停下来亮绿勾，直到你通过 ZooCove 打开那条会话。
-- **回到正确的会话。** 点击动物或使用快捷键直达。默认 Codex、多个 Cockpit 实例和自定义 `CODEX_HOME` 可以同时监听。
+- **打开对应的会话。** 点击动物或使用快捷键。Codex 可跳回对应的桌面实例，Claude Code 和 Pi 会在 ZooCove 内打开预览，并提供精确的终端恢复命令。
 - **搜索会话，给它换个头像。** 展开刘海后，可以按标题、项目或会话 ID 搜索。每条会话都能选一只动物，也能用自己的项目图标。
 
-ZooCove 使用 AppKit 和 SwiftUI 原生实现，读取本机 Codex 数据并监听文件变化。使用 ZooCove 无需注册账号，也无需连接 ZooCove 云服务。
+ZooCove 使用 AppKit 和 SwiftUI 原生实现，读取本机会话文件并监听变化。使用 ZooCove 无需注册账号，也无需连接 ZooCove 云服务。
+
+## 支持的 Agent
+
+| Agent | 自动发现 | 可手动添加的目录 |
+| --- | --- | --- |
+| Codex | 默认和 Cockpit 实例 | `CODEX_HOME` |
+| Claude Code | 默认和 Cockpit 实例 | `CLAUDE_CONFIG_DIR` |
+| Pi Agent | 默认实例 | `PI_CODING_AGENT_DIR` |
+
+ZooCove 分别记录 Agent 类型和实例来源。Cockpit 提供 Codex、Claude Code 的实例位置，ZooCove 按对应 Agent 的格式读取会话，用原目录生成恢复命令。
+
+**v1.7.1 公开下载版支持 Codex。** Claude Code、Pi 和 Cockpit Claude 可在 **[从源码构建的 1.8 系列](#从源码构建)** 中体验。
 
 ## 安装
 
@@ -22,7 +34,7 @@ ZooCove 使用 AppKit 和 SwiftUI 原生实现，读取本机 Codex 数据并监
 
 1. 从 [GitHub Releases](https://github.com/EuanTop/ZooCove/releases) 下载 `ZooCove.dmg`。
 2. 打开镜像，将 **ZooCove** 拖到「应用程序」，再启动它。
-3. 在 ZooCove 的设置里选择要监听的 Codex 实例，也可以添加本机的实例目录。
+3. 在设置里选择要监听的实例。1.8 可以先选 Agent，再添加对应的本机实例目录。
 
 首个公开预览版使用临时签名，尚未经过 Apple 公证，首次启动可能被 macOS 拦截。版本说明里有 Apple 的打开指引，也可以[从源码构建](#从源码构建)。
 

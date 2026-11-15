@@ -17,10 +17,16 @@ final class CatalogWatcher {
         let callback: FSEventStreamCallback = { _, info, count, paths, flags, _ in
             guard let info else { return }
             let paths = Unmanaged<CFArray>.fromOpaque(paths).takeUnretainedValue() as? [String] ?? []
-            let mustRescan = UnsafeBufferPointer(start: flags, count: count).contains {
+            let changes = UnsafeBufferPointer(start: flags, count: count)
+            let mustRescan = changes.contains {
                 $0 & UInt32(kFSEventStreamEventFlagMustScanSubDirs | kFSEventStreamEventFlagRootChanged) != 0
             }
-            guard mustRescan || paths.contains(where: Catalog.isCatalogEvent) else { return }
+            let replaced = UInt32(kFSEventStreamEventFlagItemCreated | kFSEventStreamEventFlagItemRemoved |
+                                  kFSEventStreamEventFlagItemRenamed)
+            let newTranscript = zip(paths, changes).contains { path, flag in
+                path.hasSuffix(".jsonl") && (flag & replaced) != 0
+            }
+            guard mustRescan || newTranscript || paths.contains(where: Catalog.isCatalogEvent) else { return }
             let owner = Unmanaged<CatalogWatcher>.fromOpaque(info).takeUnretainedValue()
             MainActor.assumeIsolated { owner.onChange?() }
         }

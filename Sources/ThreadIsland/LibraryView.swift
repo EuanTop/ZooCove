@@ -273,7 +273,7 @@ struct LibraryView: View {
                             }
                             ForEach(transcript.messages) { message in
                                 VStack(alignment: .leading, spacing: 6) {
-                                    Text(message.role == .user ? "你" : "Codex")
+                                    Text(message.role == .user ? "你" : session.instance.agent.name)
                                         .font(.system(size: 11, weight: .semibold))
                                         .foregroundStyle(message.role == .user ? text : muted)
                                     Text(message.text)
@@ -301,13 +301,15 @@ struct LibraryView: View {
                 Button { model.copyCommand(session) } label: {
                     Label("复制恢复命令", systemImage: "doc.on.doc")
                 }
-                .help("复制带有此实例 CODEX_HOME 的 Codex CLI 命令")
+                .help("复制适用于当前实例和会话的终端命令")
                 Spacer()
-                Button("在 Codex 中打开") { model.openDesktop(session) }
-                    .tint(.white)
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.return, modifiers: .command)
-                    .help(model.desktopAvailable ? "跳转到此实例的具体会话" : "需要目标实例正在运行。点击可检查当前绑定。")
+                if session.instance.agent.isCodex {
+                    Button("在 Codex 中打开") { model.openDesktop(session) }
+                        .tint(.white)
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut(.return, modifiers: .command)
+                        .help(model.desktopAvailable ? "跳转到此实例的具体会话" : "需要目标实例正在运行。点击可检查当前绑定。")
+                }
             }
             .font(.system(size: 12))
             .padding(13)
@@ -400,7 +402,7 @@ struct LibraryView: View {
     private var instanceSettings: some View {
         VStack(alignment: .leading, spacing: 7) {
             HStack {
-                Text("Codex 实例")
+                Text("Agent 实例")
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(text)
                 Text("\(model.activeInstances.count)/\(model.instances.count) 已启用")
@@ -408,7 +410,13 @@ struct LibraryView: View {
                     .foregroundStyle(muted)
                 Spacer()
                 Button("重新检测") { model.detectInstances() }
-                Button { model.addInstance() } label: { Label("添加目录", systemImage: "plus") }
+                Menu {
+                    ForEach(Instance.Agent.allCases, id: \.self) { agent in
+                        Button(agent.name) { model.addInstance(agent) }
+                    }
+                } label: {
+                    Label("添加目录", systemImage: "plus")
+                }
             }
             .controlSize(.small)
 
@@ -425,8 +433,8 @@ struct LibraryView: View {
             VStack(spacing: 0) {
                 ForEach(model.instances) { instance in
                     HStack(spacing: 10) {
-                        Image(systemName: instance.kind == .standard ? "terminal" :
-                                instance.kind == .cockpit ? "square.stack" : "folder")
+                        Image(systemName: instance.origin == .standard ? "terminal" :
+                                instance.origin == .cockpit ? "square.stack" : "folder")
                             .font(.system(size: 14))
                             .foregroundStyle(muted)
                             .frame(width: 19)
@@ -446,7 +454,7 @@ struct LibraryView: View {
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        if instance.kind == .custom {
+                        if model.canForget(instance) {
                             Button { model.forget(instance) } label: {
                                 Image(systemName: "minus.circle").foregroundStyle(muted)
                             }

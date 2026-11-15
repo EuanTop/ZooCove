@@ -70,7 +70,7 @@ struct TurnCursor {
     private(set) var modified = Date.distantPast
     private(set) var completions: [Completion] = []
 
-    mutating func update(_ url: URL) throws {
+    mutating func update(_ url: URL, agent: Instance.Agent = .codex) throws {
         completions.removeAll(keepingCapacity: true)
         let file = try FileHandle(forReadingFrom: url)
         defer { try? file.close() }
@@ -106,6 +106,19 @@ struct TurnCursor {
         let decoder = JSONDecoder()
         let complete = data[start..<data.index(after: lastNewline)]
         for raw in complete.split(separator: 10) {
+            if !agent.isCodex {
+                guard let (event, timestamp) = AgentSessions.event(in: Data(raw), agent: agent) else { continue }
+                switch event {
+                case .start(let id):
+                    turn = id
+                case .finish:
+                    if let turn { completions.append(Completion(turnID: turn, timestamp: timestamp)) }
+                    turn = nil
+                case .cancel:
+                    turn = nil
+                }
+                continue
+            }
             let header = raw.prefix(512)
             guard header.range(of: Self.eventMessage) != nil,
                   Self.markers.contains(where: { raw.range(of: $0) != nil }),
@@ -170,9 +183,18 @@ public actor LiveSessions {
             }
         }
         for path in candidates.sorted() {
-            guard let id = Self.threadID(in: path) else { continue }
-            let url = Instance.canonical(URL(fileURLWithPath: path))
-            guard let instance = instances.first(where: { url.path.hasPrefix($0.root.path + "/sessions/") }) else { continue }
+            let recorded = URL(fileURLWithPath: path)
+            let url = Instance.canonical(recorded)
+            guard let instance = instances.first(where: { url.path.hasPrefix($0.sessionDirectory.path + "/") }) else { continue }
+            let id: String
+            if instance.agent.isCodex {
+                guard let thread = Self.threadID(in: path) else { continue }
+                id = thread
+            } else {
+                guard AgentSessions.scopedFile(recorded, in: instance) != nil,
+                      let thread = AgentSessions.id(at: url, agent: instance.agent) else { continue }
+                id = thread
+            }
             let previous = recovered[path]
             read(url, instance: instance, id: id, knownSession: nil,
                  recovering: previous?.id.instanceID == instance.id && previous?.id.threadID == id ? previous : nil,
@@ -207,12 +229,14 @@ public actor LiveSessions {
         var record = records[url] ?? Record(instance: instance, cursor: TurnCursor())
         let previous = record.cursor.turn ?? recovering?.turnID
         do {
-            try record.cursor.update(url)
+            try record.cursor.update(url, agent: instance.agent)
             let eligible = record.cursor.completions.filter {
                 $0.turnID == previous || ($0.timestamp.map { $0 >= startedAt } ?? false)
             }
             if record.session == nil, record.cursor.turn != nil || !eligible.isEmpty {
-                record.session = knownSession ?? (try? Catalog.interactiveSession(id: id, in: instance))
+                record.session = knownSession ?? (instance.agent.isCodex
+                    ? (try? Catalog.interactiveSession(id: id, in: instance))
+                    : AgentSessions.session(at: url, in: instance, modified: record.cursor.modified))
             }
             if let session = record.session {
                 for event in eligible {

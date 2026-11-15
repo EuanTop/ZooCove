@@ -23,10 +23,10 @@ if let index = CommandLine.arguments.firstIndex(of: "--diagnose") {
             let hit = try needle.flatMap { try Catalog.session(id: $0, in: instance) }
             let readable = hit.map { ((try? Transcript.read($0).messages.count) ?? 0) > 0 } ?? false
             let desktop = (try? DesktopRouter.destination(for: instance)) != nil
-            print("kind=\(instance.kind.rawValue) profile=\(instance.root.lastPathComponent) visible=\(page.count) lookup=\(hit != nil) preview=\(readable) desktop=\(desktop)")
+            print("agent=\(instance.agent.rawValue) origin=\(instance.origin.rawValue) profile=\(instance.root.lastPathComponent) visible=\(page.count) lookup=\(hit != nil) preview=\(readable) desktop=\(desktop)")
         } catch {
             failed = true
-            print("kind=\(instance.kind.rawValue) profile=\(instance.root.lastPathComponent) error=\(error.localizedDescription)")
+            print("agent=\(instance.agent.rawValue) origin=\(instance.origin.rawValue) profile=\(instance.root.lastPathComponent) error=\(error.localizedDescription)")
         }
     }
     exit(failed || instances.isEmpty ? 1 : 0)
