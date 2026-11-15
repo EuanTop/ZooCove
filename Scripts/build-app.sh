@@ -24,6 +24,7 @@ install -m 755 "$binary_dir/ZooCove" "$build/Contents/MacOS/ZooCove"
 # Swift's debug map contains absolute paths to the developer's build machine.
 xcrun strip -S "$build/Contents/MacOS/ZooCove"
 install -m 644 Resources/Info.plist "$build/Contents/Info.plist"
+install -m 644 LICENSE "$build/Contents/Resources/LICENSE"
 swift Scripts/PrepareCompanions.swift Design/animal-doodles-16.png \
     "$build/Contents/Resources/Companions" "$stage/art.png"
 for size in 16 32 128 256 512; do
