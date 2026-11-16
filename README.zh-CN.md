@@ -32,17 +32,15 @@ ZooCove 使用 AppKit 和 SwiftUI 原生实现，读取本机会话文件并监�
 
 [Cockpit Tools](https://github.com/jlcodes99/cockpit-tools) 提供 Codex、Claude Code 的实例位置，ZooCove 按对应 Agent 的格式读取会话，用原目录生成恢复命令。
 
-**v1.7.1 公开下载版支持 Codex。** Claude Code、Pi 和 Cockpit Claude 可在 **[从源码构建的 1.8 系列](#从源码构建)** 中体验。
-
 ## 安装
 
 **需要 macOS 15 或更新版本。** 通用安装包支持 Apple 芯片和 Intel Mac。有实体刘海的 MacBook 会显示动物栏。其他显示器可以用菜单栏入口或 **⌃⌥J** 打开会话面板。
 
 1. 从 [GitHub Releases](https://github.com/EuanTop/ZooCove/releases) 下载 `ZooCove.dmg`。
 2. 打开镜像，将 **ZooCove** 拖到「应用程序」，再启动它。
-3. 在设置里选择要监听的实例。1.8 可以先选 Agent，再添加对应的本机实例目录。
+3. 在设置里选择要监听的实例。添加本机实例目录时，先选择对应的 Agent。
 
-首个公开预览版使用临时签名，尚未经过 Apple 公证，首次启动可能被 macOS 拦截。版本说明里有 Apple 的打开指引，也可以[从源码构建](#从源码构建)。
+公开预览版使用临时签名，尚未经过 Apple 公证，首次启动可能被 macOS 拦截。版本说明里有 Apple 的打开指引，也可以[从源码构建](#从源码构建)。
 
 ## 快捷操作
 

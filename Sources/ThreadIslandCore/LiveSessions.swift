@@ -28,6 +28,7 @@ public struct CompletedTurn: Codable, Equatable, Sendable {
 public struct LiveUpdate: Sendable {
     public let running: [RunningSession]
     public let completed: [CompletedTurn]
+    public let watchedRollouts: Set<String>
 }
 
 struct TurnCursor {
@@ -70,7 +71,7 @@ struct TurnCursor {
     private(set) var modified = Date.distantPast
     private(set) var completions: [Completion] = []
 
-    mutating func update(_ url: URL, agent: Instance.Agent = .codex) throws {
+    mutating func update(_ url: URL, agent: Instance.Agent = .codex, modifiedSince cutoff: Date? = nil) throws {
         completions.removeAll(keepingCapacity: true)
         let file = try FileHandle(forReadingFrom: url)
         defer { try? file.close() }
@@ -79,6 +80,7 @@ struct TurnCursor {
         let length = UInt64(info.st_size)
         modified = Date(timeIntervalSince1970: Double(info.st_mtimespec.tv_sec) +
                         Double(info.st_mtimespec.tv_nsec) / 1e9)
+        if let cutoff, modified < cutoff { return }
         if inode != info.st_ino || offset > length {
             inode = info.st_ino
             offset = 0
@@ -151,7 +153,9 @@ public actor LiveSessions {
     }
 
     public static let activityTimeout: TimeInterval = 20 * 60
+    private static let recentRolloutLimit = 12
     private var records: [URL: Record] = [:]
+    private var recentCodexRollouts: [Instance.ID: [String]] = [:]
     private var delivered: [Session.ID: CompletedTurn] = [:]
     private let startedAt = Date.now
 
@@ -161,6 +165,7 @@ public actor LiveSessions {
                        recovering tracked: [TrackedTurn] = []) -> LiveUpdate {
         let enabled = Set(instances.map(\.id))
         records = records.filter { enabled.contains($0.value.instance.id) }
+        recentCodexRollouts = recentCodexRollouts.filter { enabled.contains($0.key) }
         let cutoff = Date.now.addingTimeInterval(-Self.activityTimeout)
         var completed: [Session.ID: CompletedTurn] = [:]
         var candidates = paths
@@ -169,16 +174,19 @@ public actor LiveSessions {
 
         if seed {
             for instance in instances {
-                let recent = (try? Catalog.sessions(in: instance, limit: 12)) ?? []
-                for session in recent {
-                    guard let url = try? Transcript.scopedRollout(for: session),
-                          let modified = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate,
-                          modified >= cutoff else { continue }
-                    if recovered[url.path] == nil {
-                        read(url, instance: instance, id: session.threadID, knownSession: session,
-                             recovering: nil, completed: &completed)
-                        candidates.remove(url.path)
-                    }
+                guard let recent = try? Catalog.sessions(in: instance, limit: Self.recentRolloutLimit) else { continue }
+                let rollouts = recent.compactMap { session -> (URL, Session)? in
+                    guard let url = try? Transcript.scopedRollout(for: session) else { return nil }
+                    return (url, session)
+                }
+                if instance.agent.isCodex {
+                    // Codex keeps its rollout open between turns. Directory events can miss appends.
+                    recentCodexRollouts[instance.id] = rollouts.map { $0.0.path }
+                }
+                for (url, session) in rollouts where recovered[url.path] == nil {
+                    read(url, instance: instance, id: session.threadID, knownSession: session,
+                         recovering: nil, cutoff: cutoff, completed: &completed)
+                    candidates.remove(url.path)
                 }
             }
         }
@@ -198,7 +206,7 @@ public actor LiveSessions {
             let previous = recovered[path]
             read(url, instance: instance, id: id, knownSession: nil,
                  recovering: previous?.id.instanceID == instance.id && previous?.id.threadID == id ? previous : nil,
-                 completed: &completed)
+                 cutoff: cutoff, completed: &completed)
         }
         records = records.filter { $0.value.cursor.modified >= cutoff }
         if records.count > 128 {
@@ -219,17 +227,18 @@ public actor LiveSessions {
             if $0.session.instance.id != $1.session.instance.id { return $0.session.instance.id < $1.session.instance.id }
             return $0.session.threadID < $1.session.threadID
         }
-        return LiveUpdate(running: ordered, completed: Array(completed.values))
+        let watched = Set(ordered.map(\.rolloutPath)).union(recentCodexRollouts.values.joined())
+        return LiveUpdate(running: ordered, completed: Array(completed.values), watchedRollouts: watched)
     }
 
     public nonisolated static func isRollout(_ path: String) -> Bool { threadID(in: path) != nil }
 
     private func read(_ url: URL, instance: Instance, id: String, knownSession: Session?,
-                      recovering: TrackedTurn?, completed: inout [Session.ID: CompletedTurn]) {
+                      recovering: TrackedTurn?, cutoff: Date, completed: inout [Session.ID: CompletedTurn]) {
         var record = records[url] ?? Record(instance: instance, cursor: TurnCursor())
         let previous = record.cursor.turn ?? recovering?.turnID
         do {
-            try record.cursor.update(url, agent: instance.agent)
+            try record.cursor.update(url, agent: instance.agent, modifiedSince: recovering == nil ? cutoff : nil)
             let eligible = record.cursor.completions.filter {
                 $0.turnID == previous || ($0.timestamp.map { $0 >= startedAt } ?? false)
             }
@@ -239,6 +248,14 @@ public actor LiveSessions {
                     : AgentSessions.session(at: url, in: instance, modified: record.cursor.modified))
             }
             if let session = record.session {
+                if instance.agent.isCodex, record.cursor.turn != nil || !eligible.isEmpty {
+                    var recent = recentCodexRollouts[instance.id] ?? []
+                    if recent.first != url.path {
+                        recent.removeAll { $0 == url.path }
+                        recent.insert(url.path, at: 0)
+                        recentCodexRollouts[instance.id] = Array(recent.prefix(Self.recentRolloutLimit))
+                    }
+                }
                 for event in eligible {
                     let time = event.timestamp ?? record.cursor.modified
                     if let old = delivered[session.id], old.turnID == event.turnID || old.completedAt > time { continue }

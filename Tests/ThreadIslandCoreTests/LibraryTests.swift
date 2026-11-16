@@ -195,6 +195,46 @@ private struct Fixture {
     #expect(stopped.completed.isEmpty)
 }
 
+@Test func idleCodexRolloutRemainsWatchedAcrossTurns() async throws {
+    let fixture = try Fixture()
+    defer { fixture.remove() }
+    let cockpit = fixture.instance("cockpit", kind: .cockpit)
+    try fixture.makeCatalog(cockpit, title: "Existing chat")
+    let directory = cockpit.sessionDirectory.appending(path: "2026/11/15")
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    let file = directory.appending(path: "rollout-2026-11-15T15-00-00-\(duplicatedID)_\(otherID).jsonl")
+    try Data("{\"type\":\"event_msg\",\"payload\":{\"type\":\"task_complete\",\"turn_id\":\"earlier\"}}\n".utf8)
+        .write(to: file)
+    try FileManager.default.setAttributes([.modificationDate: Date.now.addingTimeInterval(-3_600)],
+                                          ofItemAtPath: file.path)
+    var database: OpaquePointer?
+    try #require(sqlite3_open(cockpit.root.appending(path: "state_5.sqlite").path, &database) == SQLITE_OK)
+    defer { sqlite3_close(database) }
+    let sql = "UPDATE threads SET rollout_path = '\(file.path)' WHERE id = '\(duplicatedID)'"
+    try #require(sqlite3_exec(database, sql, nil, nil, nil) == SQLITE_OK)
+
+    let monitor = LiveSessions()
+    let idle = await monitor.update(instances: [cockpit], paths: [], seed: true)
+    #expect(idle.running.isEmpty && idle.completed.isEmpty)
+    #expect(idle.watchedRollouts == [file.path])
+
+    let writer = try FileHandle(forWritingTo: file)
+    defer { try? writer.close() }
+    try writer.seekToEnd()
+    try writer.write(contentsOf: Data("{\"type\":\"event_msg\",\"payload\":{\"type\":\"task_started\",\"turn_id\":\"next\"}}\n".utf8))
+    let started = await monitor.update(instances: [cockpit], paths: [file.path], seed: false)
+    #expect(started.running.map(\.turnID) == ["next"])
+
+    try writer.write(contentsOf: Data("{\"type\":\"event_msg\",\"payload\":{\"type\":\"task_complete\",\"turn_id\":\"next\"}}\n".utf8))
+    let completed = await monitor.update(instances: [cockpit], paths: [file.path], seed: false)
+    #expect(completed.running.isEmpty)
+    #expect(completed.completed.map(\.turnID) == ["next"])
+    #expect(completed.watchedRollouts == [file.path])
+
+    let disabled = await monitor.update(instances: [], paths: [file.path], seed: false)
+    #expect(disabled.watchedRollouts.isEmpty)
+}
+
 @Test func islandLabelsDisambiguateSameProjectWithoutRenamingVisibleResults() throws {
     let fixture = try Fixture()
     defer { fixture.remove() }

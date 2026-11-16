@@ -8,8 +8,7 @@ const chinese = {
   pending: "首个公开版本发布后开放下载",
   requirements: "macOS 15+ · Apple 芯片与 Intel",
   localRequirements: "本地体验版 · macOS 15+",
-  previewRequirements: "v1.7.1 公开预览版 · Codex · macOS 15+",
-  sourceBuild: "Claude Code 和 Pi 可从源码构建 1.8 体验",
+  previewRequirements: (tag) => tag + " 公开预览版 · macOS 15+ · Apple 芯片与 Intel",
   search: "搜索会话",
   instances: "全部实例",
   working: "运行中",
@@ -32,7 +31,7 @@ const chinese = {
 
 const english = {
   localRequirements: "Local preview build · macOS 15+",
-  previewRequirements: "v1.7.1 public preview · Codex · macOS 15+",
+  previewRequirements: (tag) => tag + " public preview · macOS 15+ · Apple silicon & Intel",
   defaultProfile: "Default profile",
   working: "Working",
   ready: "✓ Ready",
@@ -192,13 +191,7 @@ if (repositoryPattern.test(repository)) {
   setLink("source", source);
   setLink("release-notes", `${source}/releases`);
   setLink("download", `${source}/releases/${asset}/ZooCove.dmg`);
-  if (previewTag === "v1.7.1") {
-    document.querySelector("#requirements").textContent = copy.previewRequirements;
-    setLink("source-build", isChinese
-      ? `${source}/blob/main/README.zh-CN.md#从源码构建`
-      : `${source}#build-from-source`);
-    document.querySelector("#source-build-note").hidden = false;
-  }
+  if (preview) document.querySelector("#requirements").textContent = copy.previewRequirements(previewTag);
 } else if (localHost && localDMG && /^[\w.-]+\.dmg$/.test(localDMG)) {
   setLink("download", `./${localDMG}`);
   download.download = localDMG;

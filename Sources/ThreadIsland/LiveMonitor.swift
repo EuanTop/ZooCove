@@ -7,7 +7,7 @@ final class LiveMonitor {
     private let source = LiveSessions()
     private var instances: [Instance] = []
     private var stream: FSEventStreamRef?
-    private var activeFiles: [String: DispatchSourceFileSystemObject] = [:]
+    private var watchedFiles: [String: DispatchSourceFileSystemObject] = [:]
     private var tasks: Task<Void, Never>?
     private var expire: Task<Void, Never>?
     private var pending: Set<String> = []
@@ -35,8 +35,8 @@ final class LiveMonitor {
         pending.removeAll()
         needsSeed = false
         recovering.removeAll()
-        for source in activeFiles.values { source.cancel() }
-        activeFiles.removeAll()
+        for source in watchedFiles.values { source.cancel() }
+        watchedFiles.removeAll()
         if let stream {
             FSEventStreamStop(stream)
             FSEventStreamInvalidate(stream)
@@ -94,7 +94,7 @@ final class LiveMonitor {
                 recovering.removeAll()
                 let result = await source.update(instances: instances, paths: paths, seed: seed, recovering: recovery)
                 guard !Task.isCancelled, version == generation else { return }
-                watchActiveFiles(result.running)
+                watchRollouts(result.watchedRollouts)
                 onChange?(result)
                 scheduleExpiry(result.running)
             } while !pending.isEmpty || needsSeed
@@ -102,12 +102,11 @@ final class LiveMonitor {
         }
     }
 
-    private func watchActiveFiles(_ sessions: [RunningSession]) {
-        let paths = Set(sessions.map(\.rolloutPath))
-        for path in Array(activeFiles.keys) where !paths.contains(path) {
-            activeFiles.removeValue(forKey: path)?.cancel()
+    private func watchRollouts(_ paths: Set<String>) {
+        for path in Array(watchedFiles.keys) where !paths.contains(path) {
+            watchedFiles.removeValue(forKey: path)?.cancel()
         }
-        for path in paths where activeFiles[path] == nil {
+        for path in paths where watchedFiles[path] == nil {
             let descriptor = open(path, O_EVTONLY | O_CLOEXEC)
             guard descriptor >= 0 else { continue }
             let events = DispatchSource.makeFileSystemObjectSource(
@@ -115,16 +114,15 @@ final class LiveMonitor {
             events.setCancelHandler { close(descriptor) }
             events.setEventHandler { [weak self, weak events] in
                 MainActor.assumeIsolated {
-                    guard let self, let events, self.activeFiles[path] === events else { return }
-                    if !events.data.intersection([.rename, .delete, .revoke]).isEmpty {
-                        self.activeFiles.removeValue(forKey: path)?.cancel()
-                    }
-                    self.refresh(paths: [path], coalesceWrites: true)
+                    guard let self, let events, self.watchedFiles[path] === events else { return }
+                    let moved = !events.data.intersection([.rename, .delete, .revoke]).isEmpty
+                    if moved { self.watchedFiles.removeValue(forKey: path)?.cancel() }
+                    self.refresh(paths: [path], seed: moved, coalesceWrites: true)
                 }
             }
-            activeFiles[path] = events
+            watchedFiles[path] = events
             events.activate()
-            // Close the gap between reading a new active rollout and attaching its watcher.
+            // Catch writes between the initial read and attaching the watcher.
             pending.insert(path)
         }
     }
